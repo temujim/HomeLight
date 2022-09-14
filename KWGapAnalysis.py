@@ -4,6 +4,7 @@ from wordcloud import ImageColorGenerator
 from wordcloud import STOPWORDS
 import matplotlib.pyplot as plt
 from functools import reduce
+import numpy as np
 
 HLDF = pd.read_csv('~/__HOMELIGHT/HomeLight/SEO_Keywords_HL_9_10_2022.csv')
 
@@ -106,6 +107,10 @@ sites = ['homelight.com',
 'upnest.com',
 ]
 
+kwmetrics = ['Search Volume','Keyword Difficulty','CPC','Competition','Results','Keyword Intents']
+kwmetricsV2 = ['Search Volume','Keyword Difficulty','CPC','Competition','Results']
+
+
 
 """  TEST SCRIPTS
 for i in range(1,7):
@@ -124,8 +129,8 @@ for i in range(1,7):
         print(dfname)
 """
 
-
-# Create list of pandas dataframes
+##################################################
+# Create list of pandas dataframes, for KW metrics
 data_frames=[]
 for i in range(1,7):
     for k, v in KWGaps.items():
@@ -138,12 +143,30 @@ for i in range(1,7):
         dfname = dfname.drop(sites, axis=1, errors='ignore')
         data_frames.append(dfname)
 
+
+# create list of dataframes for rankings only
+rankingsdf=[]
+for i in range(1,7):
+    for k, v in KWGaps.items():
+        dfname = v+str(i)
+        colname = v+str(i)
+        dfname = pd.read_csv(dirpath+str(i)+'-'+k+'.csv')
+        dfname['source'] = colname
+        #dfname.head()
+        dfname = dfname.drop(sitepages, axis=1, errors='ignore')
+        dfname = dfname.drop(kwmetrics, axis=1, errors='ignore')
+        rankingsdf.append(dfname)
+
+###############################################3333
+
 # test loop to get each dataframe
 # for i in range(30):
 #     dfname='df'+str(i)
 #     print(dfname)
 #     dfname = data_frames[0]
        
+# commented for now to shorted scripts, need to be unfolded
+"""
 df1= data_frames[0]
 df2= data_frames[1]
 df3= data_frames[2]
@@ -174,30 +197,38 @@ df27= data_frames[26]
 df28= data_frames[27]
 df29= data_frames[28]
 df30= data_frames[29]
-        
-df15.head()
+"""      
 
-merge1 = pd.merge(df1, df2, on=['Keyword'],how='outer')
-merge1.head()
+#merge1 = pd.merge(df1, df2, on=['Keyword'],how='outer')
+#merge1.head()
 
-# merge all KWs and KW data 
+#############################################################
+
+# ------------------------
+# merge all KWs and KW data
+# ------------------------
 #df_merged = reduce(lambda  left,right: pd.merge(left,right,on=['Keyword'], how='outer'), data_frames).fillna('void')
 df_merged = reduce(lambda  left,right: pd.merge(left,right,on=['Keyword'], how='outer'), data_frames)
 
-len(df_merged)
-df_merged[:10].to_csv('~/df_merged_test.csv')
 
+# ------------------------
+# merge rankings keywords
+# ------------------------
+df_rankmerged = reduce(lambda left, right: pd.merge(left,right,on=['Keyword'],how='outer'),rankingsdf)
 
+#------------------------------------------------------------
 
 # GET the average for all columns
-SearchVol = [col for col in df_merged.columns if 'Search Volume' in col]
-len(SearchVol)
-df_merged2 = df_merged.copy()
-df_merged2['FinalSearchVol'] = df_merged2[SearchVol].mean()
-df_merged2[SearchVol]
-df_merged2.columns.get_loc[SearchVol]
+# SearchVol = [col for col in df_merged.columns if 'Search Volume' in col]
+# len(SearchVol)
+# df_merged2 = df_merged.copy()
+# df_merged2['FinalSearchVol'] = df_merged2[SearchVol].mean()
+# df_merged2[SearchVol]
+# df_merged2.columns.get_loc[SearchVol]
 
-import numpy as np
+#################################################
+# Search volume
+# Get the Unify the metrics of the columns
 def column_index(df, query_cols):
     cols = df.columns.values
     sidx = np.argsort(cols)
@@ -241,65 +272,146 @@ SearchColNames = ['SearchVol1',
 
 
 df_merged3.columns.values[1:31] = SearchColNames
-df_merged3.head()
-df_merged3['FinalSearchVolume']=df_merged3[SearchColNames].mean(skipna=True)
-df_merged3[['Keyword','FinalSearchVolume']]
+df_merged3['FinalSearchVolume']=df_merged3[SearchColNames].mean(axis=1,numeric_only=True,skipna=True)
 
-column_index(df_merged2, SearchVol)
-SearchVol
+# test if data accurate
+df_merged3[['Keyword','FinalSearchVolume']].sample(20)
 
 
-KWData = df_merged['Keyword']
-KWData
+#############################################################
+
+#- test data for RANKINGS
+dftest = df_rankmerged.copy()
+dft = dftest.copy()
 
 
+#- test data for Metrics
+dfmetrics = df_merged.copy()
+dfm = dfmetrics.copy()
 
-AllKW = df_merged[['Keyword','Search Volume_x']]
-AllKW = AllKW.iloc[:,:2]
-AllKW.head()
-AllKW.rename(columns={'Search Volume_x':'Search Volume'},inplace=True)
+def ColCleaner(df,colkw):
 
+    colt = [col for col in df.columns if colkw in col]
+    tolcols = len(colt)+1
 
-AllKW.head()
-data_frames.insert(0,AllKW)
+    colnames = [colkw+str(i) for i in range(1,tolcols)]
 
-df_vol = reduce(lambda  left,right: pd.merge(left,right[['Keyword','Search Volume']],on=['Keyword'], how='left'), data_frames)
+    coldupes = [col for col in df.columns if colkw in col]
+    coldupes.insert(0,"Keyword")
 
-df_vol.head()
+    df = df[coldupes]  #include keyword and colkw
 
-len(df_vol)
+    df.columns.values[1:tolcols] = colnames
+    #finalcolname = 'Final'+colkw
+    df[colkw] = df[colnames].mean(axis=1,numeric_only=True,skipna=True)
 
-t1 = pd.merge(MS1,MS2)
+    df = df[['Keyword',colkw]]
 
-MS2.head()
-
-
-
-
-
-# create list of DFNames
-for  i in range(1,7):
-    for k, v in KWGaps.items():
-        dfname = v+str(i)
-data_frames
+    return df
 
 
+def ColQA(df,colkw):
 
-a=0
-for  i in range(1,7):
-    for k, v in KWGaps.items():
-        dfname = v+str(i)
-        a=a+1
-        print(str(a),'- '+dfname)
+    colt = [col for col in df.columns if colkw in col]
+    tolcols = len(colt)+1
+
+    colnames = [colkw+str(i) for i in range(1,tolcols)]
+
+    coldupes = [col for col in df.columns if colkw in col]
+    coldupes.insert(0,"Keyword")
+
+    df = df[coldupes]  #include keyword and colkw
+
+#    df.columns.values[1:tolcols] = colnames
+#    finalcolname = 'Final'+colkw
+#    df[finalcolname] = df[colnames].mean(axis=1,numeric_only=True,skipna=True)
+#
+#    df = df[['Keyword',finalcolname]]
+
+    return df
 
 
+# sample data for the calculation
+quickendf = ColCleaner(dft,'quickenloans.com')
+quickendf.head()
 
 
-dflist = ['James','Armida',"Dominic"]
+###############################################
+# COMPILE ALL DATA
 
-dflist
-dflist.pop(2)
+#--------------------------------------------------
+# Compile all rankings
+ranklistdf = []
+for i in sites:
+    i = ColCleaner(dft,i)
+    ranklistdf.append(i)
+len(ranklistdf)
 
-dflist[]
+FinalRankMerged = reduce(lambda  left,right: pd.merge(left,right,on=['Keyword'], how='left'), ranklistdf)
+FinalRankMerged = FinalRankMerged.replace(0,np.nan)
+FinalRankMerged.head()
+FinalRankMerged.info()
+
+#--------------------------------------------------
+# Compile all KW Metrics
+allkwmetricsdf = []
+for i in kwmetricsV2:
+    i = ColCleaner(dfm,i)
+    allkwmetricsdf.append(i)
+len(allkwmetricsdf)
+
+FinalMetricsMerged = reduce(lambda  left,right: pd.merge(left,right,on=['Keyword'], how='left'), allkwmetricsdf)
+FinalMetricsMerged = FinalMetricsMerged.replace(0,np.nan)
+FinalMetricsMerged.head()
+FinalMetricsMerged.info()
+
+###############################################
+# FULL MERGED OF DF
+##############################################
+FullDF = pd.merge(FinalMetricsMerged,FinalRankMerged, how='left', on='Keyword')
+FullDF.info()
+FullDF.to_csv('~/fulldf.csv')
+###############################################
+
+FDF = FullDF.copy()
+FD = FDF.copy()
+
+# create a competitor list, by taking out homelight from sites
+compsites = sites.copy()
+compsites.remove('homelight.com')
+
+
+FD[compsites]
+FD['Quantile'] = FD[compsites].quantile(q=0.25, axis=1, numeric_only=True, interpolation='linear')
+FD['AvgRank']= FD[compsites].mean(axis=1,numeric_only=True,skipna=True)
+FD['Competitors'] = FD[compsites].count(axis=1,numeric_only=True)
+FD['WordCount'] = FD['Keyword'].str.count(' ') + 1
+FD.drop('CompRankCount', axis=1, inplace=True)
+FD.head()
+
+def df_column_switch(df, column1, column2):
+    i = list(df.columns)
+    a, b = i.index(column1), i.index(column2)
+    i[b], i[a] = i[a], i[b]
+    df = df[i]
+    return df
+
+#FD = df_column_switch(FD,'Competitors','WordCount')
+FD.head()
+
+
+FD.to_csv('~/__HOMELIGHT/FullData.csv')
+
+
+QWords = ['how','what','why','when','who','whose','which','where']
+
+
+#
+
+#------------------------------------------------------------
+# QA result
+b = ColQA(dft,'quickenloans.com')
+b['total'] = b.sum(axis=1,numeric_only=True,skipna=True)
+b['total'].count()
 
 
