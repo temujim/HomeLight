@@ -10,7 +10,7 @@ HLDF = pd.read_csv('~/__HOMELIGHT/HomeLight/SEO_Keywords_HL_9_10_2022.csv')
 
 HLrent=HLDF.loc[HLDF['Keyword'].str.contains(fr'\brent',regex=True)]
 
-text = " ".join(i for i in HLrent['Keyword'])
+text = " ".join(i for i in HLDF['Keyword'])
 
 stopwords = set(STOPWORDS)
 wordcloud = WordCloud(stopwords=stopwords, background_color='white').generate(text)
@@ -19,40 +19,6 @@ plt.figure( figsize=(30,20))
 plt.imshow(wordcloud, interpolation='bilinear')
 
 
-# ----------------------------------------------------------
-# 
-# MS1 = pd.read_csv("/home/barca/__HOMELIGHT/KWGapData/1-Missing.csv")
-# 
-# 
-# MS1.head()
-# 
-# 
-# KWGaps['Missing']
-# 
-# 
-# # dictionary loop
-# for k in KWGaps:
-#     print(KWGaps[k])
-# 
-# 
-# # dict loops keys
-# for k in KWGaps.keys():
-#     print(k)
-# 
-# for i in range(1,7):
-#     print(i)
-# 
-# for k,v in KWGaps.items():
-#     print(k,v)
-# 
-# 
-# 
-# for i in range(1,7):
-#     for k, v in KWGaps.items():
-#         print(dirpath+str(i)+'-'+k+'.csv')
-#         #print(str(i)+'-'+k+'.csv'+'  :::  '+v+str(i))
-# 
-# import csv's as dataframes
 dirpath = '/home/barca/__HOMELIGHT/KWGapData/'
 
 KWGaps = {'Missing':'MS',
@@ -111,23 +77,6 @@ kwmetrics = ['Search Volume','Keyword Difficulty','CPC','Competition','Results',
 kwmetricsV2 = ['Search Volume','Keyword Difficulty','CPC','Competition','Results']
 
 
-
-"""  TEST SCRIPTS
-for i in range(1,7):
-    for k, v in KWGaps.items():
-        dfname = v+str(i)
-        print(dfname)
-
-
-# MS2.head()
-# UQ1.head()
-
-for i in range(1,7):
-    for k, v in KWGaps.items():
-        dfname = v+str(i)
-        print((dirpath+str(i)+'-'+k+'.csv'))
-        print(dfname)
-"""
 
 ##################################################
 # Create list of pandas dataframes, for KW metrics
@@ -370,7 +319,7 @@ FinalMetricsMerged.info()
 ##############################################
 FullDF = pd.merge(FinalMetricsMerged,FinalRankMerged, how='left', on='Keyword')
 FullDF.info()
-FullDF.to_csv('~/fulldf.csv')
+FullDF.to_csv('~/20220915fulldf.csv')
 ###############################################
 
 FDF = FullDF.copy()
@@ -381,12 +330,18 @@ compsites = sites.copy()
 compsites.remove('homelight.com')
 
 
+# get the rank count and the quantile rankings data of competitors
 FD[compsites]
 FD['Quantile'] = FD[compsites].quantile(q=0.25, axis=1, numeric_only=True, interpolation='linear')
 FD['AvgRank']= FD[compsites].mean(axis=1,numeric_only=True,skipna=True)
 FD['Competitors'] = FD[compsites].count(axis=1,numeric_only=True)
 FD['WordCount'] = FD['Keyword'].str.count(' ') + 1
-FD.drop('CompRankCount', axis=1, inplace=True)
+FD['KWValue'] = FD['Search Volume'] * FD['CPC']
+#FD.drop('CompRankCount', axis=1, inplace=True)
+
+# move kw value after CPC column
+KWValCol = FD.pop("KWValue")
+FD.insert(4, "KWValue", KWValCol)
 FD.head()
 
 def df_column_switch(df, column1, column2):
@@ -397,21 +352,36 @@ def df_column_switch(df, column1, column2):
     return df
 
 #FD = df_column_switch(FD,'Competitors','WordCount')
-FD.head()
 
 
-FD.to_csv('~/__HOMELIGHT/FullData.csv')
+FD.to_csv('~/__HOMELIGHT/20220915FullDataV2.csv')
+
+# QWords = ['how','what','why','when','who','whose','which','where','can']
+# QWords2 = ['/how/','/what/','/why/','/when/','/who/','/whose/','/which/','/where/','/can/']
+
+#QKW = FD[FD['Keyword'].str.contains(r'|'.join(QWords))]
+#QKW2 = FD[FD['Keyword'].str.contains(r'|'.join(QWords))]
+QKW = FD[FD['Keyword'].str.contains(r"\b(how|what|why|when|who|whose|which|where|can)\b")]
+#QKW.to_csv('~/__HOMELIGHT/BlogKWs.csv')
+
+# exclude 2 words
+QKW = QKW[~(QKW['WordCount']<=2)]
+
+# further clean up Blog Keywords (QKW)
+# exclude rent keywords without "own"
+rent=QKW['Keyword'].str.contains('rent')
+own=~QKW['Keyword'].str.contains('own')
+QKW=QKW[~(rent&own)]
+
+# QKW.to_csv('~/__HOMELIGHT/BlogKWs.csv')
 
 
-QWords = ['how','what','why','when','who','whose','which','where']
+# Exclude finance only relevant keywords
+QKW['FinanceKW']=QKW[['rocketmortgage.com','themortgagereports.com','quickenloans.com']].count(axis=1,numeric_only=True)
+A = QKW[~(QKW['FinanceKW']==QKW['Competitors'])]
+A.to_csv('~/__HOMELIGHT/FINALBLOG.csv') ## requires slight manual cleaning and keyword selection
+ 
 
+FD[:][['Keyword','rockethomes.com','homes.com','coldwellbanker.com']].sample(20)
 
-#
-
-#------------------------------------------------------------
-# QA result
-b = ColQA(dft,'quickenloans.com')
-b['total'] = b.sum(axis=1,numeric_only=True,skipna=True)
-b['total'].count()
-
-
+ 
