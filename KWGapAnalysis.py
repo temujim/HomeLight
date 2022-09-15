@@ -108,50 +108,6 @@ for i in range(1,7):
 
 ###############################################3333
 
-# test loop to get each dataframe
-# for i in range(30):
-#     dfname='df'+str(i)
-#     print(dfname)
-#     dfname = data_frames[0]
-       
-# commented for now to shorted scripts, need to be unfolded
-"""
-df1= data_frames[0]
-df2= data_frames[1]
-df3= data_frames[2]
-df4= data_frames[3]
-df5= data_frames[4]
-df6= data_frames[5]
-df7= data_frames[6]
-df8= data_frames[7]
-df9= data_frames[8]
-df10= data_frames[9]
-df11= data_frames[10]
-df12= data_frames[11]
-df13= data_frames[12]
-df14= data_frames[13]
-df15= data_frames[14]
-df16= data_frames[15]
-df17= data_frames[16]
-df18= data_frames[17]
-df19= data_frames[18]
-df20= data_frames[19]
-df21= data_frames[20]
-df22= data_frames[21]
-df23= data_frames[22]
-df24= data_frames[23]
-df25= data_frames[24]
-df26= data_frames[25]
-df27= data_frames[26]
-df28= data_frames[27]
-df29= data_frames[28]
-df30= data_frames[29]
-"""      
-
-#merge1 = pd.merge(df1, df2, on=['Keyword'],how='outer')
-#merge1.head()
-
-#############################################################
 
 # ------------------------
 # merge all KWs and KW data
@@ -167,13 +123,6 @@ df_rankmerged = reduce(lambda left, right: pd.merge(left,right,on=['Keyword'],ho
 
 #------------------------------------------------------------
 
-# GET the average for all columns
-# SearchVol = [col for col in df_merged.columns if 'Search Volume' in col]
-# len(SearchVol)
-# df_merged2 = df_merged.copy()
-# df_merged2['FinalSearchVol'] = df_merged2[SearchVol].mean()
-# df_merged2[SearchVol]
-# df_merged2.columns.get_loc[SearchVol]
 
 #################################################
 # Search volume
@@ -271,12 +220,6 @@ def ColQA(df,colkw):
 
     df = df[coldupes]  #include keyword and colkw
 
-#    df.columns.values[1:tolcols] = colnames
-#    finalcolname = 'Final'+colkw
-#    df[finalcolname] = df[colnames].mean(axis=1,numeric_only=True,skipna=True)
-#
-#    df = df[['Keyword',finalcolname]]
-
     return df
 
 
@@ -356,11 +299,6 @@ def df_column_switch(df, column1, column2):
 
 FD.to_csv('~/__HOMELIGHT/20220915FullDataV2.csv')
 
-# QWords = ['how','what','why','when','who','whose','which','where','can']
-# QWords2 = ['/how/','/what/','/why/','/when/','/who/','/whose/','/which/','/where/','/can/']
-
-#QKW = FD[FD['Keyword'].str.contains(r'|'.join(QWords))]
-#QKW2 = FD[FD['Keyword'].str.contains(r'|'.join(QWords))]
 QKW = FD[FD['Keyword'].str.contains(r"\b(how|what|why|when|who|whose|which|where|can)\b")]
 #QKW.to_csv('~/__HOMELIGHT/BlogKWs.csv')
 
