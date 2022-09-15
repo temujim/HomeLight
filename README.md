@@ -5,6 +5,7 @@
 ## Relevant Links:
 * [Python Script Used](https://github.com/temujim/HomeLight/blob/master/KWGapAnalysis.py)
 *  [Final Top 100 Blog KWs](https://github.com/temujim/HomeLight/blob/master/Final/20220915_HomeLIght_Final-BlogContentKWGapV1.0.xlsx)
+*  [All 128k Keywords KW Opps]( https://github.com/temujim/HomeLight/blob/master/20220915FullDataV2.csv)
 
 ## Data Sources:
 * Used SpyFu's organic competitive intelligence data to analyze relevant competition based on KW overlaps and traffic size.
