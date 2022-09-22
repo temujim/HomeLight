@@ -9,9 +9,9 @@
 
 ## Data Sources:
 * Used SpyFu's organic competitive intelligence data to analyze relevant competition based on KW overlaps and traffic size.
- ![HomeLight KW TagCloud](https://i.imgur.com/ovS317l.png)
+![HomeLight KW TagCloud](https://i.imgur.com/MjFPwo0.png)
 * Used SEMRush's domain comparison data to have some rough traffic estimation.
- ![HomeLight KW TagCloud](https://i.imgur.com/MjFPwo0.png)
+![HomeLight KW TagCloud](https://i.imgur.com/ovS317l.png)
 * Used SEMRush's KW gap data to fetch relevant keywords which are segmented by: Missing, Weak, Untapped, Unique, Strong
 
 ## Scope and Size:
